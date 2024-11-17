@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffffff;
+        }
+
+        .calculator {
+            width: 300px;
+            background: #696969;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #display {
+            width: 93%;
+            height: 50px;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            text-align: right;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #007BFF;
+            color: #fff;
+            transition: background 0.3s;
+            user-select: none;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button:active {
+            background: #003d80;
+        }
+
+        .operator {
+            background: #FF9500;
+        }
+
+        .operator:hover {
+            background: #cc7a00;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" id="display">
+        <div class="buttons">
+            <button onclick="clearDisplay()">C</button>
+            <button onclick="appendValue('(')">(</button>
+            <button onclick="appendValue(')')">)</button>
+            <button class="operator" onclick="appendValue('/')">÷</button>
+            <button onclick="appendValue('7')">7</button>
+            <button onclick="appendValue('8')">8</button>
+            <button onclick="appendValue('9')">9</button>
+            <button class="operator" onclick="appendValue('*')">×</button>
+            <button onclick="appendValue('4')">4</button>
+            <button onclick="appendValue('5')">5</button>
+            <button onclick="appendValue('6')">6</button>
+            <button class="operator" onclick="appendValue('-')">−</button>
+            <button onclick="appendValue('1')">1</button>
+            <button onclick="appendValue('2')">2</button>
+            <button onclick="appendValue('3')">3</button>
+            <button class="operator" onclick="appendValue('+')">+</button>
+            <button onclick="appendValue('0')">0</button>
+            <button onclick="appendValue('.')">.</button>
+            <button onclick="deleteLast()">Del</button>
+            <button class="operator" onclick="calculate()">=</button>
+        </div>
+    </div>
+    <script>
+        const display = document.getElementById('display');
+    
+        function appendValue(value) {
+            const lastChar = display.value.slice(-1);
+    
+            // Automatically add a multiplication operator if needed
+            if (value === '(' && (/[0-9.)]/.test(lastChar))) {
+                display.value += '*';
+            }
+    
+            display.value += value;
+        }
+    
+        function clearDisplay() {
+            display.value = '';
+        }
+    
+        function deleteLast() {
+            display.value = display.value.slice(0, -1);
+        }
+    
+        function calculate() {
+            try {
+                display.value = eval(display.value);
+            } catch {
+                display.value = 'Error';
+            }
+        }
+    
+        // Restrict input to valid characters
+        display.addEventListener('input', () => {
+            display.value = display.value.replace(/[^0-9+\-*/().]/g, '');
+        });
+    
+        // Handle Enter key
+        display.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                calculate();
+            }
+        });
+    </script>
+    
+</body>
+</html>
