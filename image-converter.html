@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image File Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1f1f1f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #2c2c2c;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .drop-area {
+            width: 100%;
+            height: 200px;
+            border: 2px dashed #888;
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            cursor: pointer;
+            background-color: #333;
+        }
+        .drop-area:hover {
+            background-color: #444;
+        }
+        .drop-area input[type="file"] {
+            display: none;
+        }
+        .drop-area img {
+            width: 50px;
+            margin-bottom: 10px;
+        }
+        .drop-area span {
+            color: #888;
+            font-size: 16px;
+        }
+        .drop-area p {
+            margin: 10px 0;
+            color: #aaa;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #convertedFile {
+            margin-top: 20px;
+        }
+        #convertedFile a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        #convertedFile a:hover {
+            text-decoration: underline;
+        }
+        .conversion-menu {
+            display: none;
+        }
+        .conversion-menu.active {
+            display: block;
+        }
+        .conversion-menu select {
+            padding: 5px;
+            margin-top: 10px;
+        }
+        .conversion-menu button {
+            margin-top: 15px;
+            width: 48%;
+            display: inline-block;
+        }
+        #moreImagesBtn {
+            margin-top: 20px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Image File Converter</h1>
+
+    <!-- Drag-and-drop file upload area -->
+    <div class="drop-area" id="dropArea">
+        <img src="https://assets.ejxp.org/images/file-icon.png" alt="File Icon">
+        <span>Drag & Drop or Click to Select a File</span>
+        <input type="file" id="fileInput" accept="image/*">
+        <p>Accepted Formats: PNG, JPEG, GIF, BMP, WEBP</p>
+    </div>
+
+    <!-- Convert button -->
+    <button id="convertButton" onclick="showConversionMenu()">Convert Image</button>
+
+    <!-- Conversion Menu (hidden by default) -->
+    <div id="conversionMenu" class="conversion-menu">
+        <p id="imageDetails"></p>
+        <select id="extensionSelect">
+            <option value="image/png">PNG</option>
+            <option value="image/jpeg">JPEG</option>
+            <option value="image/webp">WEBP</option>
+            <option value="image/bmp">BMP</option>
+        </select>
+        <br>
+        <button onclick="previewImage()">Preview Image</button>
+        <button onclick="downloadConverted()">Download</button>
+        <br>
+        <button id="moreImagesBtn" onclick="addMoreImages()">Add More Images</button>
+    </div>
+
+    <!-- Display converted file link -->
+    <div id="convertedFile"></div>
+</div>
+
+<script>
+    // Get elements
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('fileInput');
+    const convertButton = document.getElementById('convertButton');
+    const conversionMenu = document.getElementById('conversionMenu');
+    const imageDetails = document.getElementById('imageDetails');
+    const extensionSelect = document.getElementById('extensionSelect');
+    const convertedFile = document.getElementById('convertedFile');
+
+    let selectedFile = null;
+    let convertedImageBlob = null;
+
+    // Handle file selection from drag/drop or file input
+    function handleFileSelect(file) {
+        selectedFile = file;
+        dropArea.querySelector('span').textContent = file.name;
+        dropArea.style.borderColor = "#4CAF50";
+    }
+
+    // Event listeners for drag and drop
+    dropArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropArea.style.backgroundColor = "#444";
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+        dropArea.style.backgroundColor = "#333";
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            handleFileSelect(file);
+        }
+        dropArea.style.backgroundColor = "#333";
+    });
+
+    // Handle file input change
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            handleFileSelect(file);
+        }
+    });
+
+    // Show the conversion menu
+    function showConversionMenu() {
+        if (!selectedFile) {
+            alert("Please select an image file.");
+            return;
+        }
+
+        // Hide the initial menu and show conversion menu
+        document.querySelector('.container').style.display = 'none';
+        conversionMenu.classList.add('active');
+
+        // Display the selected file details
+        const fileName = selectedFile.name.split('.')[0];
+        const fileExtension = selectedFile.name.split('.').pop();
+        imageDetails.textContent = `Convert ${fileName}.${fileExtension} to ${fileName}.${extensionSelect.value.split('/')[1]}`;
+    }
+
+    // Convert file function
+    function convertFile() {
+        const selectedExtension = extensionSelect.value;
+        const img = new Image();
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            img.src = e.target.result;
+        };
+
+        reader.readAsDataURL(selectedFile);
+
+        img.onload = function() {
+            // If the image is loaded successfully, convert it using canvas
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            // Draw the image on the canvas
+            ctx.drawImage(img, 0, 0);
+
+            // Convert the canvas to the selected format
+            canvas.toBlob(function(blob) {
+                convertedImageBlob = blob;
+                const convertedLink = document.createElement('a');
+                convertedLink.href = URL.createObjectURL(blob);
+                convertedLink.download = `converted_${selectedFile.name.split('.')[0]}.${selectedExtension.split('/')[1]}`;
+                convertedFile.innerHTML = `<p>File Converted!</p><a href="${convertedLink.href}" download>Click here to download your converted file</a>`;
+            }, selectedExtension); // Convert to selected format
+        };
+    }
+
+    // Preview the converted image
+    function previewImage() {
+        const imgElement = document.createElement('img');
+        imgElement.src = URL.createObjectURL(convertedImageBlob);
+        document.body.appendChild(imgElement);
+    }
+
+    // Download the converted file
+    function downloadConverted() {
+        if (convertedImageBlob) {
+            const convertedLink = document.createElement('a');
+            convertedLink.href = URL.createObjectURL(convertedImageBlob);
+            convertedLink.download = `converted_${selectedFile.name.split('.')[0]}.${extensionSelect.value.split('/')[1]}`;
+            convertedLink.click();
+        }
+    }
+
+    // Add more images for conversion
+    function addMoreImages() {
+        // Reset and show the initial drop area again
+        document.querySelector('.container').style.display = 'block';
+        conversionMenu.classList.remove('active');
+        convertedFile.innerHTML = '';
+        selectedFile = null;
+    }
+</script>
+
+</body>
+</html>
